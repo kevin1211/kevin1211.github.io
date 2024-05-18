@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Application de Covoiturage</title>
+    <link rel="stylesheet" href="COCOVOIT-CSS.css">
+    <style>
+        #pilotForm, #covoitureurView {
+            display: none;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+<h1>Gestion des Trajets</h1>
+
+<div id="registration">
+    <button onclick="register('pilote')">S'inscrire en tant que pilote</button>
+    <button onclick="register('covoitureur')">S'inscrire en tant que covoitureur</button>
+</div>
+
+<div id="pilotForm">
+    <h2>Ajouter un nouveau trajet</h2>
+    <form id="addTrajetForm">
+        <label for="username pilot">Nom d'utilisateur:</label>
+        <input type="text" id="username pilot" placeholder="Votre nom" required><br>
+        <label for="depart">Adresse de départ:</label>
+        <input type="text" id="depart" placeholder="Départ" required><br>
+        <label for="destination">Adresse de destination:</label>
+        <input type="text" id="destination" placeholder="Destination" required><br>
+        <label for="places">Nombre de places disponibles:</label>
+        <input type="number" id="places" placeholder="Places disponibles" required><br>
+        <label for="departureDate">Date de départ:</label>
+        <input type="date" id="departureDate" required><br>
+        <label for="departureTime">Heure de départ:</label>
+        <input type="time" id="departureTime" required><br>
+        <button type="button" onclick="addTrajet()">Ajouter le trajet</button>
+    </form>
+    <button onclick="goBack()">Retour à l'inscription</button>
+</div>
+
+<div id="covoitureurView">
+    <h2>Réserver un trajet</h2>
+    <form id="registerForm">
+        <label for="username copilot">Nom d'utilisateur:</label>
+        <input type="text" id="username copilot" placeholder="Votre nom" required><br>
+        <label for="trajetSelect">Choisir un trajet:</label>
+        <select id="trajetSelect"></select><br>
+        <label for="seats">Nombre de places souhaitées:</label>
+        <input type="number" id="seats" placeholder="Places souhaitées" required><br>
+        <button type="button" onclick="registerUserAndReserve()">Réserver</button>
+    </form>
+    <button onclick="goBack()">Retour à l'inscription</button>
+    <button onclick="showInscrits()">Voir les inscrits</button>
+    <ul id="trajetList"></ul>
+</div>
+
+<script src="COCOVOIT-JS.js"></script>
+</body>
+</html>
