@@ -8,19 +8,19 @@ body {
     height: 100vh;
     background-color: #f0f0f0;
 }
-
-h1, h2, h3 {
+header, main {
     text-align: center;
 }
-
+header {
+    margin-bottom: 20px;
+}
 #registration, #pilotForm, #covoitureurView {
     background: #fff;
     padding: 20px;
     border-radius: 5px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
-
-button {
+button, a {
     margin: 10px 0;
     padding: 10px 20px;
     border: none;
@@ -28,17 +28,15 @@ button {
     background: #007BFF;
     color: #fff;
     cursor: pointer;
+    text-decoration: none;
 }
-
-button:hover {
+button:hover, a:hover {
     background: #0056b3;
 }
-
 label {
     display: block;
     margin: 10px 0 5px;
 }
-
 input, select {
     width: 100%;
     padding: 10px;
