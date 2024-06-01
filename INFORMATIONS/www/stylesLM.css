@@ -42,6 +42,11 @@ address p {
 
 main p {
     margin-bottom: 15px;
+    text-align: justify;
+}
+
+.justified-text {
+    text-align: justify;
 }
 
 footer {
