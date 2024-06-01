@@ -4,7 +4,6 @@ body {
     padding: 0;
     background-color: #f4f4f4;
 }
-
 .container {
     width: 90%;
     max-width: 1200px;
@@ -14,7 +13,6 @@ body {
     box-shadow: 0 0 10px rgba(0,0,0,0.1);
     border-radius: 10px;
 }
-
 .header {
     display: flex;
     flex-direction: column;
@@ -22,11 +20,9 @@ body {
     border-bottom: 2px solid #007BFF;
     padding-bottom: 10px;
 }
-
 .header h1 {
     margin: 10px 0;
 }
-
 .profile-photo {
     width: 150px;
     height: 150px;
@@ -34,7 +30,6 @@ body {
     object-fit: cover;
     margin-bottom: 10px;
 }
-
 @media(min-width: 600px) {
     .header {
         flex-direction: row;
@@ -44,38 +39,31 @@ body {
         margin: 0;
     }
 }
-
 h1 {
     color: #007BFF;
 }
-
 h2 {
     color: #333;
     border-bottom: 2px solid #007BFF;
     padding-bottom: 5px;
 }
-
 .personal-info p, ul {
     line-height: 1.6;
 }
-
 ul {
     list-style-type: none;
     padding: 0;
 }
-
 ul li {
     padding: 5px 0;
     border-bottom: 1px solid #ddd;
 }
-
 .download-buttons {
     margin-top: 20px;
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
 }
-
 button {
     padding: 10px 20px;
     margin: 5px 0;
@@ -86,11 +74,9 @@ button {
     border-radius: 5px;
     transition: background-color 0.3s ease;
 }
-
 button:hover {
     background-color: #0056b3;
 }
-
 .home-link {
     display: inline-block;
     margin-top: 20px;
@@ -101,12 +87,10 @@ button:hover {
     border-radius: 5px;
     transition: background-color 0.3s ease, color 0.3s ease;
 }
-
 .home-link:hover {
     background-color: #007BFF;
     color: #fff;
 }
-
 @media (max-width: 599px) {
     .container {
         width: 95%;
