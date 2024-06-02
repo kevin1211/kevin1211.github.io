@@ -11,11 +11,9 @@ class Trajet {
         this.covoitureurs = [];
         this.arrivalTime = '';
     }
-
     validate() {
         return this.depart && this.destination && this.places > 0 && this.departureDate && this.departureTime;
     }
-
     async calculateRoute() {
         const apiKey = 'dbd951e0-11ea-47a2-9da1-881646f25478';
         const from = await this.convertAddress(this.depart);
@@ -31,7 +29,6 @@ class Trajet {
             throw new Error('Aucun trajet trouvé');
         }
     }
-
     async convertAddress(address) {
         const apiKey = 'dbd951e0-11ea-47a2-9da1-881646f25478';
         const response = await fetch(`https://graphhopper.com/api/1/geocode?q=${address}&locale=fr&limit=1&key=${apiKey}`);
@@ -43,7 +40,6 @@ class Trajet {
             throw new Error('Adresse non trouvée');
         }
     }
-
     addPassager(nom, places) {
         if (this.places >= places) {
             this.covoitureurs.push({ nom, places });
@@ -52,26 +48,21 @@ class Trajet {
             throw new Error('Pas assez de places disponibles');
         }
     }
-
     toString() {
         return `De ${this.depart} à ${this.destination}, Places disponibles: ${this.places}, Distance: ${(this.distance / 1000).toFixed(2)} km, Durée: ${this.formatTime(this.duree)}, Heure d'arrivée: ${this.arrivalTime}`;
     }
-
     formatTime(minutes) {
         const hours = Math.floor(minutes / 60);
         const mins = Math.floor(minutes % 60);
         return `${hours} h ${mins} min`;
     }
-
     calculateArrivalTime() {
         const departure = new Date(`${this.departureDate}T${this.departureTime}`);
         const arrival = new Date(departure.getTime() + this.duree * 60000); // Convert duration to milliseconds
         this.arrivalTime = arrival.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
     }
 }
-
 const trajets = [];
-
 function register(role) {
     document.getElementById('registration').style.display = 'none';
     if (role === 'pilote') {
@@ -81,13 +72,11 @@ function register(role) {
         updateTrajetSelect();
     }
 }
-
 function goBack() {
     document.getElementById('pilotForm').style.display = 'none';
     document.getElementById('covoitureurView').style.display = 'none';
     document.getElementById('registration').style.display = 'block';
 }
-
 async function addTrajet() {
     const depart = document.getElementById('depart').value;
     const destination = document.getElementById('destination').value;
@@ -112,7 +101,6 @@ async function addTrajet() {
         alert('Veuillez entrer des informations valides');
     }
 }
-
 function updateTrajetSelect() {
     const trajetSelect = document.getElementById('trajetSelect');
     trajetSelect.innerHTML = '';
@@ -123,7 +111,6 @@ function updateTrajetSelect() {
         trajetSelect.appendChild(option);
     });
 }
-
 function updateTrajetList() {
     const trajetList = document.getElementById('trajetList');
     trajetList.innerHTML = '';
@@ -133,7 +120,6 @@ function updateTrajetList() {
         trajetList.appendChild(li);
     });
 }
-
 function registerUserAndReserve() {
     const username = document.getElementById('usernameCopilot').value;
     const trajetIndex = parseInt(document.getElementById('trajetSelect').value);
@@ -152,7 +138,6 @@ function registerUserAndReserve() {
         alert('Veuillez vérifier le trajet sélectionné et votre nom d\'utilisateur');
     }
 }
-
 function showInscrits() {
     const trajetIndex = parseInt(document.getElementById('trajetSelect').value);
     const trajet = trajets[trajetIndex];
