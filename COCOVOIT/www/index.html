@@ -6,7 +6,8 @@
     <title>COCOVOIT BY ROELANDT KEVIN</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        #pilotForm, #covoitureurView {
+        #pilotForm,
+        #covoitureurView {
             display: none;
             margin-top: 20px;
         }
@@ -15,6 +16,7 @@
 <body>
 <header>
     <h1>Bienvenue sur la Page COCOVOIT</h1>
+    <img src="../doc/img_logo.png" alt="logo" class="logo">
     <p>Cliquez sur le lien ci-dessous pour retourner à la page d'accueil.</p>
     <button><a href="../../ACCUEIL/www/index.html">Retourner à la page d'accueil</a></button>
 </header>
@@ -23,21 +25,22 @@
         <h2>Gestion des Trajets</h2>
         <button onclick="register('pilote')">S'inscrire en tant que pilote</button>
         <button onclick="register('covoitureur')">S'inscrire en tant que covoitureur</button>
+        <button onclick="showInscrits()">Voir les inscrits</button>
     </section>
     <section id="pilotForm">
         <h2>Ajouter un nouveau trajet</h2>
         <form id="addTrajetForm">
-            <label for="usernamePilot">Nom d'utilisateur:</label>
+            <label for="usernamePilot">Nom d'utilisateur :</label>
             <input type="text" id="usernamePilot" placeholder="Votre nom" required><br>
-            <label for="depart">Adresse de départ:</label>
+            <label for="depart">Adresse de départ :</label>
             <input type="text" id="depart" placeholder="Départ" required><br>
-            <label for="destination">Adresse de destination:</label>
+            <label for="destination">Adresse de destination :</label>
             <input type="text" id="destination" placeholder="Destination" required><br>
-            <label for="places">Nombre de places disponibles:</label>
+            <label for="places">Nombre de places disponibles :</label>
             <input type="number" id="places" placeholder="Places disponibles" required><br>
-            <label for="departureDate">Date de départ:</label>
+            <label for="departureDate">Date de départ :</label>
             <input type="date" id="departureDate" required><br>
-            <label for="departureTime">Heure de départ:</label>
+            <label for="departureTime">Heure de départ :</label>
             <input type="time" id="departureTime" required><br>
             <button type="button" onclick="addTrajet()">Ajouter le trajet</button>
         </form>
@@ -46,17 +49,23 @@
     <section id="covoitureurView">
         <h2>Réserver un trajet</h2>
         <form id="registerForm">
-            <label for="usernameCopilot">Nom d'utilisateur:</label>
+            <label for="usernameCopilot">Nom d'utilisateur :</label>
             <input type="text" id="usernameCopilot" placeholder="Votre nom" required><br>
-            <label for="trajetSelect">Choisir un trajet:</label>
+            <label for="trajetSelect">Choisir un trajet :</label>
             <select id="trajetSelect"></select><br>
-            <label for="seats">Nombre de places souhaitées:</label>
+            <label for="seats">Nombre de places souhaitées :</label>
             <input type="number" id="seats" placeholder="Places souhaitées" required><br>
             <button type="button" onclick="registerUserAndReserve()">Réserver</button>
         </form>
         <button onclick="goBack()">Retour à l'inscription</button>
-        <button onclick="showInscrits()">Voir les inscrits</button>
+    </section>
+    <section id="trajetListSection">
+        <h2>Liste des trajets</h2>
         <ul id="trajetList"></ul>
+    </section>
+    <section id="inscritsSection">
+        <h2>Inscrits pour le trajet sélectionné</h2>
+        <ul id="inscritsList"></ul>
     </section>
 </main>
 <script src="script.js"></script>
