@@ -1,5 +1,5 @@
 function downloadFile(fileName) {
-    const filePath = 'INFORMATIONS/doc' + fileName;
+    const filePath = '../doc/' + fileName;
     const link = document.createElement('a');
     link.href = filePath;
     link.setAttribute('download', fileName);
