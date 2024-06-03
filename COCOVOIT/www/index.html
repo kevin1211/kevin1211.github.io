@@ -5,11 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>COCOVOIT BY ROELANDT KEVIN</title>
     <link rel="stylesheet" href="style.css">
+    <link href="https://unpkg.com/leaflet/dist/leaflet.css" rel="stylesheet"/>
     <style>
-        #pilotForm,
-        #covoitureurView,
-        #trajetListSection,
-        #inscritsSection {
+        #pilotForm, #covoitureurView, #trajetListSection, #inscritsSection, #map {
             display: none;
             margin-top: 20px;
         }
@@ -40,7 +38,7 @@
             <label for="destination">Adresse de destination :</label>
             <input type="text" id="destination" placeholder="Destination" required><br>
             <label for="places">Nombre de places disponibles :</label>
-            <input type="number" id="places" placeholder="Places disponibles" required><br>
+            <input id="places" min="1" placeholder="Places disponibles" required type="number"><br>
             <label for="departureDate">Date de départ :</label>
             <input type="date" id="departureDate" required><br>
             <label for="departureTime">Heure de départ :</label>
@@ -52,25 +50,19 @@
     <section id="covoitureurView">
         <h2>Réserver un trajet</h2>
         <form id="registerForm">
-            <div>
-                <label for="usernameCopilot">Nom du covoitureur:</label>
-                <input id="usernameCopilot" required type="text">
-            </div>
-            <div>
-                <label for="trajetSelect">Sélectionner un trajet:</label>
-                <select id="trajetSelect" onchange="showTrajetDetails()" required></select>
-            </div>
+            <label for="usernameCopilot">Nom du covoitureur :</label>
+            <input id="usernameCopilot" required type="text"><br>
+            <label for="trajetSelect">Sélectionner un trajet :</label>
+            <select id="trajetSelect" required></select><br>
             <div id="trajetDetails">
                 <p>Sélectionnez un trajet pour voir les détails</p>
             </div>
-            <div>
-                <label for="seats">Nombre de places:</label>
-                <input id="seats" min="1" required type="number">
-            </div>
-            <div>
-                <label for="adresseReservation">Adresse de montée:</label>
-                <input id="adresseReservation" required type="text">
-            </div>
+            <label for="seats">Nombre de places:</label>
+            <input id="seats" min="1" required type="number"><br>
+            <label for="adresseReservation">Adresse de montée :</label>
+            <input id="adresseReservation" required type="text"><br>
+            <label for="adresseArret">Adresse de l'arrêt :</label>
+            <input id="adresseArret" type="text"><br>
             <button type="button" onclick="registerUserAndReserve()">Réserver</button>
         </form>
         <button onclick="goBack()">Retour à l'inscription</button>
@@ -80,13 +72,16 @@
         <ul id="trajetList"></ul>
         <button onclick="goBack()">Retour à l'inscription</button>
     </section>
-    <div id="inscritsSection" style="display:none;">
+    <section id="inscritsSection">
         <h2>Liste des inscrits</h2>
-        <select id="selectTrajetForInscrits" onchange="showInscrits()"></select>
+        <label for="selectTrajetForInscrits"></label><select id="selectTrajetForInscrits"
+                                                             onchange="showInscrits()"></select>
         <div id="inscritsList"></div>
         <button onclick="goBack()">Retour</button>
-    </div>
+    </section>
 </main>
+<div id="map"></div>
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script src="script.js"></script>
 </body>
 </html>
