@@ -7,7 +7,9 @@
     <link rel="stylesheet" href="style.css">
     <style>
         #pilotForm,
-        #covoitureurView {
+        #covoitureurView,
+        #trajetListSection,
+        #inscritsSection {
             display: none;
             margin-top: 20px;
         }
@@ -25,7 +27,8 @@
         <h2>Gestion des Trajets</h2>
         <button onclick="register('pilote')">S'inscrire en tant que pilote</button>
         <button onclick="register('covoitureur')">S'inscrire en tant que covoitureur</button>
-        <button onclick="showInscrits()">Voir les inscrits</button>
+        <button onclick="showSection('trajetListSection')">Voir les trajets</button>
+        <button onclick="showSection('inscritsSection')">Voir les inscrits</button>
     </section>
     <section id="pilotForm">
         <h2>Ajouter un nouveau trajet</h2>
@@ -49,12 +52,25 @@
     <section id="covoitureurView">
         <h2>Réserver un trajet</h2>
         <form id="registerForm">
-            <label for="usernameCopilot">Nom d'utilisateur :</label>
-            <input type="text" id="usernameCopilot" placeholder="Votre nom" required><br>
-            <label for="trajetSelect">Choisir un trajet :</label>
-            <select id="trajetSelect"></select><br>
-            <label for="seats">Nombre de places souhaitées :</label>
-            <input type="number" id="seats" placeholder="Places souhaitées" required><br>
+            <div>
+                <label for="usernameCopilot">Nom du covoitureur:</label>
+                <input id="usernameCopilot" required type="text">
+            </div>
+            <div>
+                <label for="trajetSelect">Sélectionner un trajet:</label>
+                <select id="trajetSelect" onchange="showTrajetDetails()" required></select>
+            </div>
+            <div id="trajetDetails">
+                <p>Sélectionnez un trajet pour voir les détails</p>
+            </div>
+            <div>
+                <label for="seats">Nombre de places:</label>
+                <input id="seats" min="1" required type="number">
+            </div>
+            <div>
+                <label for="adresseReservation">Adresse de montée:</label>
+                <input id="adresseReservation" required type="text">
+            </div>
             <button type="button" onclick="registerUserAndReserve()">Réserver</button>
         </form>
         <button onclick="goBack()">Retour à l'inscription</button>
@@ -62,11 +78,14 @@
     <section id="trajetListSection">
         <h2>Liste des trajets</h2>
         <ul id="trajetList"></ul>
+        <button onclick="goBack()">Retour à l'inscription</button>
     </section>
-    <section id="inscritsSection">
-        <h2>Inscrits pour le trajet sélectionné</h2>
-        <ul id="inscritsList"></ul>
-    </section>
+    <div id="inscritsSection" style="display:none;">
+        <h2>Liste des inscrits</h2>
+        <select id="selectTrajetForInscrits" onchange="showInscrits()"></select>
+        <div id="inscritsList"></div>
+        <button onclick="goBack()">Retour</button>
+    </div>
 </main>
 <script src="script.js"></script>
 </body>
