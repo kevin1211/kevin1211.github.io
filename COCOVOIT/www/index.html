@@ -43,10 +43,16 @@
             <input type="date" id="departureDate" required><br>
             <label for="departureTime">Heure de départ :</label>
             <input type="time" id="departureTime" required><br>
+            <label for="fuelType">Type de carburant :</label>
+            <select id="fuelType" required>
+                <option value="petrol">Essence</option>
+                <option value="diesel">Diesel</option>
+                <option value="lpg">GPL</option>
+                <option value="electric">Électrique</option>
+            </select><br>
             <label for="fuelConsumption">Consommation de carburant (L/100km) :</label>
-            <input id="fuelConsumption" placeholder="L/100km" required type="number"><br>
-            <label for="fuelPrice">Prix du carburant (€/L) :</label>
-            <input id="fuelPrice" placeholder="€/L" required type="number"><br>
+            <input id="fuelConsumption" min="1" placeholder="Consommation (L/100km)" required step="0.1"
+                   type="number"><br>
             <button type="button" onclick="addTrajet()">Ajouter le trajet</button>
         </form>
         <button onclick="goBack()">Retour à l'inscription</button>

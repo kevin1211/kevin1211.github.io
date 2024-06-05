@@ -1,28 +1,30 @@
 const map = L.map('map').setView([51.505, -0.09], 13);
 class Trajet {
-    constructor(pilote, depart, destination, places, departureDate, departureTime, fuelConsumption, fuelPrice) {
+    constructor(pilote, depart, destination, places, departureDate, departureTime, fuelType) {
         this.pilote = pilote;
         this.depart = depart;
         this.destination = destination;
         this.places = places;
         this.departureDate = departureDate;
         this.departureTime = departureTime;
-        this.fuelConsumption = fuelConsumption; // Consommation de carburant en L/100km
-        this.fuelPrice = fuelPrice; // Prix du carburant en €/L
+        this.fuelType = fuelType;
         this.valid = this.validate();
         this.distance = 0;
         this.duree = 0;
         this.covoitureurs = [];
         this.arrivalTime = '';
         this.itinerary = [];
+        this.fuelConsumptionPer100Km = 6; // Consommation moyenne en L/100 km
     }
 
     validate() {
-        return this.pilote && this.depart && this.destination && this.places > 0 && this.departureDate && this.departureTime && this.fuelConsumption > 0 && this.fuelPrice > 0;
+        return this.pilote && this.depart && this.destination && this.places > 0 && this.departureDate && this.departureTime && this.fuelType && this.fuelConsumption > 0;
     }
 
     async calculateRoute() {
         await this.calculateRouteInternal(this.depart, this.destination);
+        await this.getFuelPrice();
+        this.calculateFuelCost();
     }
 
     async calculateRouteWithStop(stopAddress) {
@@ -115,16 +117,44 @@ class Trajet {
         this.arrivalTime = arrivalDateTime.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
     }
 
-    calculateFuelCost() {
-        const totalFuelConsumption = (this.distance / 1000) * (this.fuelConsumption / 100); // Consommation totale en litres
-        const totalFuelCost = totalFuelConsumption * this.fuelPrice; // Coût total du carburant
-        return totalFuelCost;
+    calculateFuelConsumption() {
+        return (this.distance / 1000) * this.fuelConsumptionPer100Km / (this.covoitureurs.length + 1);
     }
 
-    calculateCostPerPerson() {
-        const totalFuelCost = this.calculateFuelCost();
-        const totalPersons = this.covoitureurs.length + 1; // Pilote + copilotes
-        return totalFuelCost / totalPersons;
+    async getFuelPrice() {
+        const response = await fetch(`https://carbu.com/belgique/prixmaximum?type=${this.fuelType}`);
+        const data = await response.text();
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(data, 'text/html');
+        const fuelPrice = doc.querySelector(`.${this.fuelType} .price`).textContent;
+        return parseFloat(fuelPrice.replace(',', '.'));
+    }
+
+    async calculateFuelCost() {
+        const fuelNeeded = (this.distance / 1000) * (this.fuelConsumption / 100); // Litres nécessaires
+        const totalFuelCost = fuelNeeded * this.fuelPrice; // Coût total du carburant
+        const totalPersons = this.covoitureurs.length + 1; // Pilote + covoitureurs
+        const costPerPerson = totalFuelCost / totalPersons; // Coût par personne
+        console.log(`Coût total du carburant : ${totalFuelCost.toFixed(2)}€, Coût par personne : ${costPerPerson.toFixed(2)}€`);
+        return costPerPerson;
+    }
+
+    async calculateCostPerPerson() {
+        const fuelCost = await this.calculateFuelCost();
+        return fuelCost / (this.covoitureurs.length + 1);
+    }
+
+    async addPassagerWithStop(nom, places, address, stopAddress) {
+        if (this.places >= places) {
+            if (stopAddress) {
+                await this.calculateRouteWithStop(stopAddress);
+            }
+            this.covoitureurs.push({nom, places, address});
+            this.places -= places;
+            this.calculateFuelCost(); // Recalculer le coût du carburant après ajout d'un passager
+        } else {
+            throw new Error('Pas assez de places disponibles');
+        }
     }
 }
 
@@ -137,9 +167,9 @@ function addTrajet() {
     const places = parseInt(document.getElementById('places').value);
     const departureDate = document.getElementById('departureDate').value;
     const departureTime = document.getElementById('departureTime').value;
+    const fuelType = document.getElementById('fuelType').value;
     const fuelConsumption = parseFloat(document.getElementById('fuelConsumption').value);
-    const fuelPrice = parseFloat(document.getElementById('fuelPrice').value);
-    const trajet = new Trajet(pilote, depart, destination, places, departureDate, departureTime, fuelConsumption, fuelPrice);
+    const trajet = new Trajet(pilote, depart, destination, places, departureDate, departureTime, fuelType, fuelConsumption);
     if (trajet.valid) {
         trajet.calculateRoute()
             .then(() => {
@@ -182,8 +212,10 @@ function showTrajetDetails() {
     const index = document.getElementById('trajetSelect').value;
     const trajet = trajets[index];
     if (trajet) {
-        const details = `Trajet de ${trajet.depart} à ${trajet.destination}, départ à ${trajet.departureTime} (${trajet.departureDate}), distance : ${(trajet.distance / 1000).toFixed(2)} km, durée : ${Math.floor(trajet.duree)} minutes, places disponibles : ${trajet.places}, coût par personne : ${trajet.calculateCostPerPerson().toFixed(2)} €`;
-        document.getElementById('trajetDetails').innerText = details;
+        const details = `Trajet de ${trajet.depart} à ${trajet.destination}, départ à ${trajet.departureTime} (${trajet.departureDate}), distance : ${(trajet.distance / 1000).toFixed(2)} km, durée : ${Math.floor(trajet.duree)} minutes, places disponibles : ${trajet.places}`;
+        trajet.calculateCostPerPerson().then(costPerPerson => {
+            document.getElementById('trajetDetails').innerText = `${details}, coût estimé par personne : ${costPerPerson.toFixed(2)} €`;
+        });
     }
 }
 
