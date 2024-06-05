@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta content="Page de gestion des trajets de covoiturage" name="description">
     <title>COCOVOIT BY ROELANDT KEVIN</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://unpkg.com/leaflet/dist/leaflet.css" rel="stylesheet"/>
@@ -18,16 +19,17 @@
     <h1>Bienvenue sur la Page COCOVOIT</h1>
     <img src="../doc/img_logo.png" alt="logo" class="logo">
     <p>Cliquez sur le lien ci-dessous pour retourner à la page d'accueil.</p>
-    <button><a href="../../ACCUEIL/www/index.html">Retourner à la page d'accueil</a></button>
+    <button type="button"><a href="../../ACCUEIL/www/index.html">Retourner à la page d'accueil</a></button>
 </header>
 <main>
     <section id="registration">
         <h2>Gestion des Trajets</h2>
-        <button onclick="register('pilote')">S'inscrire en tant que pilote</button>
-        <button onclick="register('covoitureur')">S'inscrire en tant que covoitureur</button>
-        <button onclick="showSection('trajetListSection')">Voir les trajets</button>
-        <button onclick="showSection('inscritsSection')">Voir les inscrits</button>
+        <button onclick="register('pilote')" type="button">S'inscrire en tant que pilote</button>
+        <button onclick="register('covoitureur')" type="button">S'inscrire en tant que covoitureur</button>
+        <button onclick="showSection('trajetListSection')" type="button">Voir les trajets</button>
+        <button onclick="showSection('inscritsSection')" type="button">Voir les inscrits</button>
     </section>
+    <!-- Pilot Form Section -->
     <section id="pilotForm">
         <h2>Ajouter un nouveau trajet</h2>
         <form id="addTrajetForm">
@@ -55,8 +57,9 @@
                    type="number"><br>
             <button type="button" onclick="addTrajet()">Ajouter le trajet</button>
         </form>
-        <button onclick="goBack()">Retour à l'inscription</button>
+        <button onclick="goBack()" type="button">Retour à l'inscription</button>
     </section>
+    <!-- Co-pilot Form Section -->
     <section id="covoitureurView">
         <h2>Réserver un trajet</h2>
         <form id="registerForm">
@@ -75,19 +78,21 @@
             <input id="adresseArret" type="text"><br>
             <button type="button" onclick="registerUserAndReserve()">Réserver</button>
         </form>
-        <button onclick="goBack()">Retour à l'inscription</button>
+        <button onclick="goBack()" type="button">Retour à l'inscription</button>
     </section>
+    <!-- Traject List Section -->
     <section id="trajetListSection">
         <h2>Liste des trajets</h2>
         <ul id="trajetList"></ul>
-        <button onclick="goBack()">Retour à l'inscription</button>
+        <button onclick="goBack()" type="button">Retour à l'inscription</button>
     </section>
+    <!-- Registered List Section -->
     <section id="inscritsSection">
         <h2>Liste des inscrits</h2>
-        <label for="selectTrajetForInscrits"></label><select id="selectTrajetForInscrits"
-                                                             onchange="showInscrits()"></select>
+        <label for="selectTrajetForInscrits"></label>
+        <select id="selectTrajetForInscrits" onchange="showInscrits()"></select>
         <div id="inscritsList"></div>
-        <button onclick="goBack()">Retour</button>
+        <button onclick="goBack()" type="button">Retour</button>
     </section>
 </main>
 <div id="map"></div>
