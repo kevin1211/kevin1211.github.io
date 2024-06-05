@@ -1,12 +1,14 @@
 const map = L.map('map').setView([51.505, -0.09], 13);
 class Trajet {
-    constructor(pilote, depart, destination, places, departureDate, departureTime) {
+    constructor(pilote, depart, destination, places, departureDate, departureTime, fuelConsumption, fuelPrice) {
         this.pilote = pilote;
         this.depart = depart;
         this.destination = destination;
         this.places = places;
         this.departureDate = departureDate;
         this.departureTime = departureTime;
+        this.fuelConsumption = fuelConsumption; // Consommation de carburant en L/100km
+        this.fuelPrice = fuelPrice; // Prix du carburant en €/L
         this.valid = this.validate();
         this.distance = 0;
         this.duree = 0;
@@ -16,7 +18,7 @@ class Trajet {
     }
 
     validate() {
-        return this.pilote && this.depart && this.destination && this.places > 0 && this.departureDate && this.departureTime;
+        return this.pilote && this.depart && this.destination && this.places > 0 && this.departureDate && this.departureTime && this.fuelConsumption > 0 && this.fuelPrice > 0;
     }
 
     async calculateRoute() {
@@ -63,16 +65,6 @@ class Trajet {
         }
     }
 
-    // async registerUserAndReserve(userDetails, trajetDetails) {
-    //     try {
-    //         await this.registerUser(userDetails);
-    //         await this.addPassagerWithStop(trajetDetails);
-    //     } catch (error) {
-    //         console.error('Erreur lors de l\'enregistrement et de la réservation:', error);
-    //         throw new Error('Une erreur est survenue lors de l\'enregistrement et de la réservation');
-    //     }
-    // }
-
     drawRouteOnMap(itinerary) {
         const route = itinerary.map(point => [point[1], point[0]]); // Inverser lat/lng pour Leaflet
         if (this.routeLayer) {
@@ -112,6 +104,18 @@ class Trajet {
         const arrivalDateTime = new Date(departureDateTime.getTime() + this.duree * 60000);
         this.arrivalTime = arrivalDateTime.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
     }
+
+    calculateFuelCost() {
+        const totalFuelConsumption = (this.distance / 1000) * (this.fuelConsumption / 100); // Consommation totale en litres
+        const totalFuelCost = totalFuelConsumption * this.fuelPrice; // Coût total du carburant
+        return totalFuelCost;
+    }
+
+    calculateCostPerPerson() {
+        const totalFuelCost = this.calculateFuelCost();
+        const totalPersons = this.covoitureurs.length + 1; // Pilote + copilotes
+        return totalFuelCost / totalPersons;
+    }
 }
 
 const trajets = [];
@@ -123,8 +127,9 @@ function addTrajet() {
     const places = parseInt(document.getElementById('places').value);
     const departureDate = document.getElementById('departureDate').value;
     const departureTime = document.getElementById('departureTime').value;
-
-    const trajet = new Trajet(pilote, depart, destination, places, departureDate, departureTime);
+    const fuelConsumption = parseFloat(document.getElementById('fuelConsumption').value);
+    const fuelPrice = parseFloat(document.getElementById('fuelPrice').value);
+    const trajet = new Trajet(pilote, depart, destination, places, departureDate, departureTime, fuelConsumption, fuelPrice);
     if (trajet.valid) {
         trajet.calculateRoute()
             .then(() => {
@@ -167,7 +172,7 @@ function showTrajetDetails() {
     const index = document.getElementById('trajetSelect').value;
     const trajet = trajets[index];
     if (trajet) {
-        const details = `Trajet de ${trajet.depart} à ${trajet.destination}, départ à ${trajet.departureTime} (${trajet.departureDate}), distance : ${(trajet.distance / 1000).toFixed(2)} km, durée : ${Math.floor(trajet.duree)} minutes, places disponibles : ${trajet.places}`;
+        const details = `Trajet de ${trajet.depart} à ${trajet.destination}, départ à ${trajet.departureTime} (${trajet.departureDate}), distance : ${(trajet.distance / 1000).toFixed(2)} km, durée : ${Math.floor(trajet.duree)} minutes, places disponibles : ${trajet.places}, coût par personne : ${trajet.calculateCostPerPerson().toFixed(2)} €`;
         document.getElementById('trajetDetails').innerText = details;
     }
 }
@@ -226,6 +231,20 @@ function initializeMap() {
     L.marker([51.5, -0.09]).addTo(map)
         .bindPopup('A pretty CSS popup.<br> Easily customizable.')
         .openPopup();
+}
+
+function showCostDistribution(index) {
+    const trajet = trajets[index];
+    if (trajet) {
+        const totalCost = trajet.calculateFuelCost().toFixed(2);
+        const costPerPerson = trajet.calculateCostPerPerson().toFixed(2);
+        let distribution = `Coût total du carburant : ${totalCost} €\nCoût par personne : ${costPerPerson} €\nRépartition :\n`;
+        trajet.covoitureurs.forEach(covoitureur => {
+            distribution += `- ${covoitureur.nom} : ${costPerPerson} €\n`;
+        });
+        distribution += `- ${trajet.pilote} (pilote) : ${costPerPerson} €`;
+        alert(distribution);
+    }
 }
 
 L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
