@@ -65,6 +65,16 @@ class Trajet {
         }
     }
 
+    async registerUserAndReserve(userDetails, trajetDetails) {
+        try {
+            await this.registerUser(userDetails);
+            await this.addPassagerWithStop(trajetDetails);
+        } catch (error) {
+            console.error('Erreur lors de l\'enregistrement et de la réservation:', error);
+            throw new Error('Une erreur est survenue lors de l\'enregistrement et de la réservation');
+        }
+    }
+
     drawRouteOnMap(itinerary) {
         const route = itinerary.map(point => [point[1], point[0]]); // Inverser lat/lng pour Leaflet
         if (this.routeLayer) {
