@@ -85,13 +85,12 @@
     </section>
     <section id="inscritsSection">
         <h2>Liste des inscrits</h2>
-        <label for="selectTrajetForInscrits"></label>
-        <select id="selectTrajetForInscrits" onchange="showInscrits()"></select>
+        <select id="selectTrajetForInscrits"></select>
         <div id="inscritsList"></div>
-        <button onclick="goBack()" type="button">Retour</button>
+        <button onclick="goBack()" type="button">Retour à l'inscription</button>
     </section>
+    <div id="map" style="height: 500px;"></div>
 </main>
-<div id="map"></div>
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script src="script.js"></script>
 </body>
