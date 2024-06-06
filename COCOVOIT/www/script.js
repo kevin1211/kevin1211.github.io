@@ -64,7 +64,6 @@ class Trajet {
         const apiKey = 'cac71ff8-8896-4b85-a956-5f92f9d8d344';
         const response = await fetch(`https://graphhopper.com/api/1/geocode?q=${address}&locale=fr&limit=1&key=${apiKey}`);
         const data = await response.json();
-
         if (data.hits && data.hits.length > 0) {
             const point = data.hits[0].point;
             return `${point.lat},${point.lng}`;
@@ -111,7 +110,6 @@ function addTrajet() {
     const fuelType = document.getElementById('fuelType').value;
     const fuelConsumption = parseFloat(document.getElementById('fuelConsumption').value);
     const trajet = new Trajet(pilote, depart, destination, places, departureDate, departureTime, fuelType, fuelConsumption);
-
     trajet.validate().then(valid => {
         if (valid) {
             trajet.calculateRoute().then(() => {
