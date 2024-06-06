@@ -29,7 +29,6 @@
         <button onclick="showSection('trajetListSection')" type="button">Voir les trajets</button>
         <button onclick="showSection('inscritsSection')" type="button">Voir les inscrits</button>
     </section>
-    <!-- Pilot Form Section -->
     <section id="pilotForm">
         <h2>Ajouter un nouveau trajet</h2>
         <form id="addTrajetForm">
@@ -59,7 +58,6 @@
         </form>
         <button onclick="goBack()" type="button">Retour à l'inscription</button>
     </section>
-    <!-- Co-pilot Form Section -->
     <section id="covoitureurView">
         <h2>Réserver un trajet</h2>
         <form id="registerForm">
@@ -80,13 +78,11 @@
         </form>
         <button onclick="goBack()" type="button">Retour à l'inscription</button>
     </section>
-    <!-- Traject List Section -->
     <section id="trajetListSection">
         <h2>Liste des trajets</h2>
         <ul id="trajetList"></ul>
         <button onclick="goBack()" type="button">Retour à l'inscription</button>
     </section>
-    <!-- Registered List Section -->
     <section id="inscritsSection">
         <h2>Liste des inscrits</h2>
         <label for="selectTrajetForInscrits"></label>
@@ -94,7 +90,6 @@
         <div id="inscritsList"></div>
         <button onclick="goBack()" type="button">Retour</button>
     </section>
-
 </main>
 <div id="map"></div>
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
