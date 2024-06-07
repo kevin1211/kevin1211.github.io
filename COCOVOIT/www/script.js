@@ -1,5 +1,4 @@
 const map = L.map('map').setView([51.505, -0.09], 13);
-
 L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
 }).addTo(map);
@@ -19,6 +18,7 @@ class Trajet {
         this.covoitureurs = [];
         this.arrivalTime = '';
         this.itinerary = [];
+        this.routeLayer = null;
     }
 
     async validate() {
@@ -27,41 +27,34 @@ class Trajet {
 
     async calculateRoute() {
         await this.calculateRouteInternal(this.depart, this.destination);
-        this.arrivalTime = this.calculateArrivalTime(this.departureTime, this.duree);
-        const apiKey = 'cac71ff8-8896-4b85-a956-5f92f9d8d344';
-        const from = await this.convertAddress(this.depart);
-        const to = await this.convertAddress(this.destination);
-        const response = await fetch(`https://graphhopper.com/api/1/route?point=${from}&point=${to}&profile=car&points_encoded=false&locale=fr&calc_points=true&key=${apiKey}`);
+    }
+
+    async calculateRouteWithStop(stopAddress) {
+        const stop = await this.convertAddress(stopAddress);
+        await this.calculateRouteInternal(this.depart, stop, this.destination);
+    }
+
+    async calculateRouteInternal(...points) {
+        const apiKey = 'dbd951e0-11ea-47a2-9da1-881646f25478';
+        const locations = await Promise.all(points.map(point => this.convertAddress(point)));
+        const queryParams = locations.map(location => `point=${location}`).join('&');
+        const response = await fetch(`https://graphhopper.com/api/1/route?${queryParams}&profile=car&points_encoded=false&locale=fr&calc_points=true&key=${apiKey}`);
         const data = await response.json();
+
         if (data.paths && data.paths.length > 0) {
             const path = data.paths[0];
             this.distance = path.distance;
-            this.duree = path.time / 60000; // Convertir la durée en minutes
+            this.duree = path.time / 60000; // Convert duration to minutes
+            this.itinerary = path.points.coordinates;
             this.calculateArrivalTime();
-            this.drawRouteOnMap(path.points.coordinates);
+            this.drawRouteOnMap(this.itinerary);
         } else {
             throw new Error('Aucun trajet trouvé');
         }
     }
 
-    async calculateRouteInternal(start, end) {
-        try {
-            const response = await fetch(`https://api.openrouteservice.org/v2/directions/driving-car?api_key=${apiKey}&start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`);
-            if (response.ok) {
-                const data = await response.json();
-                this.distance = data.routes[0].segments[0].distance;
-                this.duree = data.routes[0].segments[0].duration;
-                this.itinerary = data.routes[0].geometry.coordinates;
-            } else {
-                throw new Error('Error fetching route data');
-            }
-        } catch (error) {
-            console.error('Error calculating route:', error);
-        }
-    }
-
     async convertAddress(address) {
-        const apiKey = 'cac71ff8-8896-4b85-a956-5f92f9d8d344';
+        const apiKey = 'dbd951e0-11ea-47a2-9da1-881646f25478';
         const response = await fetch(`https://graphhopper.com/api/1/geocode?q=${address}&locale=fr&limit=1&key=${apiKey}`);
         const data = await response.json();
         if (data.hits && data.hits.length > 0) {
@@ -72,58 +65,50 @@ class Trajet {
         }
     }
 
-    async calculateArrivalTime(startTime, duration) {
-        const departureDateTime = new Date(`${this.departureDate}T${startTime}`);
-        const arrivalDateTime = new Date(departureDateTime.getTime() + duration * 60000); // Add duration in milliseconds
-        const hours = arrivalDateTime.getHours().toString().padStart(2, '0');
-        const minutes = arrivalDateTime.getMinutes().toString().padStart(2, '0');
-        this.arrivalTime = `${hours}:${minutes}`;
+    drawRouteOnMap(itinerary) {
+        const route = itinerary.map(point => [point[1], point[0]]); // Inverser lat/lng pour Leaflet
+        if (this.routeLayer) {
+            this.routeLayer.remove(); // Supprimer l'itinéraire précédent si nécessaire
+        }
+        this.routeLayer = L.polyline(route, {color: 'blue'}).addTo(map);
+        map.fitBounds(this.routeLayer.getBounds()); // Adapter la vue à l'itinéraire
     }
 
-    drawRouteOnMap(coordinates) {
-        const polylinePoints = coordinates.map(coord => [coord[1], coord[0]]);
-        const polyline = L.polyline(polylinePoints, {color: 'blue'}).addTo(map);
-        map.fitBounds(polyline.getBounds());
+    addPassager(nom, places, address) {
+        if (this.places >= places) {
+            this.covoitureurs.push({nom, places, address});
+            this.places -= places;
+        } else {
+            throw new Error('Pas assez de places disponibles');
+        }
+    }
+
+    async addPassagerWithStop(nom, places, address, stopAddress) {
+        if (this.places >= places) {
+            await this.calculateRouteWithStop(stopAddress);
+            this.covoitureurs.push({nom, places, address, stopAddress});
+            this.places -= places;
+        } else {
+            throw new Error('Pas assez de places disponibles');
+        }
+    }
+
+    calculateArrivalTime() {
+        const departureDateTime = new Date(`${this.departureDate}T${this.departureTime}`);
+        const arrivalDateTime = new Date(departureDateTime.getTime() + this.duree * 60000);
+        this.arrivalTime = arrivalDateTime.toISOString().substring(11, 16);
     }
 }
 
 const trajets = [];
-const inscrits = {};
 
 function register(role) {
-    document.getElementById('registration').style.display = 'none';
     if (role === 'pilote') {
-        document.getElementById('pilotForm').style.display = 'block';
-    } else {
-        document.getElementById('covoitureurView').style.display = 'block';
-        updateTrajetSelect();
+        showSection('pilotForm');
+    } else if (role === 'covoitureur') {
+        showSection('covoitureurView');
+        populateTrajetList();
     }
-}
-
-function addTrajet() {
-    const pilote = document.getElementById('usernamePilot').value;
-    const depart = document.getElementById('depart').value;
-    const destination = document.getElementById('destination').value;
-    const places = parseInt(document.getElementById('places').value);
-    const departureDate = document.getElementById('departureDate').value;
-    const departureTime = document.getElementById('departureTime').value;
-    const fuelType = document.getElementById('fuelType').value;
-    const fuelConsumption = parseFloat(document.getElementById('fuelConsumption').value);
-    const trajet = new Trajet(pilote, depart, destination, places, departureDate, departureTime, fuelType, fuelConsumption);
-    trajet.validate().then(valid => {
-        if (valid) {
-            trajet.calculateRoute().then(() => {
-                trajets.push(trajet);
-                alert('Trajet ajouté avec succès');
-                goBack();
-            }).catch(error => {
-                console.error('Error calculating route:', error);
-                alert('Erreur lors du calcul de l\'itinéraire');
-            });
-        } else {
-            alert('Veuillez remplir tous les champs');
-        }
-    });
 }
 
 function goBack() {
@@ -132,105 +117,128 @@ function goBack() {
     document.getElementById('trajetListSection').style.display = 'none';
     document.getElementById('inscritsSection').style.display = 'none';
     document.getElementById('registration').style.display = 'block';
-}
-
-function updateTrajetSelect() {
-    const select = document.getElementById('trajetSelect');
-    select.innerHTML = '';
-    trajets.forEach((trajet, index) => {
-        const option = document.createElement('option');
-        option.value = index;
-        option.text = `${trajet.depart} - ${trajet.destination}`;
-        select.appendChild(option);
-    });
-    select.onchange = updateTrajetDetails;
-    updateTrajetDetails();
-}
-
-function updateTrajetDetails() {
-    const select = document.getElementById('trajetSelect');
-    const index = select.value;
-    const trajet = trajets[index];
-    if (trajet) {
-        document.getElementById('trajetDetails').innerHTML = `
-                <p><strong>Pilote :</strong> ${trajet.pilote}</p>
-                <p><strong>Départ :</strong> ${trajet.depart}</p>
-                <p><strong>Destination :</strong> ${trajet.destination}</p>
-                <p><strong>Places disponibles :</strong> ${trajet.places}</p>
-                <p><strong>Date et heure de départ :</strong> ${trajet.departureDate} ${trajet.departureTime}</p>
-                <p><strong>Type de carburant :</strong> ${trajet.fuelType}</p>
-                <p><strong>Consommation de carburant :</strong> ${trajet.fuelConsumption} L/100km</p>
-                <p><strong>Distance :</strong> ${(trajet.distance / 1000).toFixed(2)} km</p>
-                <p><strong>Durée :</strong> ${(trajet.duree / 60).toFixed(2)} heures</p>
-                <p><strong>Heure d'arrivée estimée :</strong> ${trajet.arrivalTime}</p>
-            `;
-        trajet.drawRouteOnMap(trajet.itinerary);
-    }
-}
-
-function registerUserAndReserve() {
-    const username = document.getElementById('usernameCopilot').value;
-    const seats = parseInt(document.getElementById('seats').value);
-    const adresseReservation = document.getElementById('adresseReservation').value;
-    const adresseArret = document.getElementById('adresseArret').value || null;
-    const trajetIndex = parseInt(document.getElementById('trajetSelect').value);
-    const trajet = trajets[trajetIndex];
-    if (username && seats > 0 && adresseReservation && trajet && seats <= trajet.places) {
-        if (!inscrits[trajetIndex]) {
-            inscrits[trajetIndex] = [];
-        }
-        inscrits[trajetIndex].push({username, seats, adresseReservation, adresseArret});
-        trajet.places -= seats;
-        alert('Réservation effectuée avec succès');
-        goBack();
-    } else {
-        alert('Veuillez remplir tous les champs et vérifier le nombre de places disponibles');
-    }
+    clearInputs();
 }
 
 function showSection(sectionId) {
     document.getElementById('registration').style.display = 'none';
     document.getElementById(sectionId).style.display = 'block';
     if (sectionId === 'trajetListSection') {
-        const list = document.getElementById('trajetList');
-        list.innerHTML = '';
-        trajets.forEach((trajet, index) => {
-            const listItem = document.createElement('li');
-            listItem.innerHTML = `${trajet.depart} - ${trajet.destination} (${trajet.places} places disponibles)`;
-            list.appendChild(listItem);
-        });
+        displayTrajetList();
     } else if (sectionId === 'inscritsSection') {
-        const select = document.getElementById('selectTrajetForInscrits');
-        select.innerHTML = '';
-        trajets.forEach((trajet, index) => {
-            const option = document.createElement('option');
-            option.value = index;
-            option.text = `${trajet.depart} - ${trajet.destination}`;
-            select.appendChild(option);
-        });
-        select.onchange = updateInscritsList;
-        updateInscritsList();
+        displayInscritsList();
     }
 }
 
-function updateInscritsList() {
-    const select = document.getElementById('selectTrajetForInscrits');
-    const index = select.value;
-    const list = document.getElementById('inscritsList');
-    list.innerHTML = '';
-    const users = inscrits[index];
-    if (users) {
-        users.forEach(user => {
-            const listItem = document.createElement('div');
-            listItem.innerHTML = `
-                    <p><strong>Nom :</strong> ${user.username}</p>
-                    <p><strong>Places réservées :</strong> ${user.seats}</p>
-                    <p><strong>Adresse de montée :</strong> ${user.adresseReservation}</p>
-                    <p><strong>Adresse d'arrêt :</strong> ${user.adresseArret || 'N/A'}</p>
-                `;
-            list.appendChild(listItem);
-        });
-    } else {
-        list.innerHTML = '<p>Aucun inscrit pour ce trajet</p>';
+function clearInputs() {
+    const inputs = document.querySelectorAll('input');
+    inputs.forEach(input => input.value = '');
+}
+
+async function addTrajet() {
+    const pilote = document.getElementById('usernamePilot').value;
+    const depart = document.getElementById('depart').value;
+    const destination = document.getElementById('destination').value;
+    const places = document.getElementById('places').value;
+    const departureDate = document.getElementById('departureDate').value;
+    const departureTime = document.getElementById('departureTime').value;
+    const fuelType = document.getElementById('fuelType').value;
+    const fuelConsumption = document.getElementById('fuelConsumption').value;
+    const trajet = new Trajet(pilote, depart, destination, places, departureDate, departureTime, fuelType, fuelConsumption);
+    try {
+        await trajet.validate();
+        await trajet.calculateRoute();
+        trajets.push(trajet);
+        alert('Trajet ajouté avec succès');
+        goBack();
+    } catch (error) {
+        alert(`Erreur: ${error.message}`);
     }
 }
+
+function populateTrajetList() {
+    const trajetSelect = document.getElementById('trajetSelect');
+    trajetSelect.innerHTML = '';
+
+    trajets.forEach((trajet, index) => {
+        const option = document.createElement('option');
+        option.value = index;
+        option.text = `${trajet.depart} à ${trajet.destination} - Départ : ${trajet.departureDate} ${trajet.departureTime}`;
+        trajetSelect.add(option);
+    });
+
+    displaySelectedTrajetDetails();
+}
+
+function displaySelectedTrajetDetails() {
+    const trajetSelect = document.getElementById('trajetSelect');
+    const selectedIndex = trajetSelect.value;
+    const selectedTrajet = trajets[selectedIndex];
+    const trajetDetails = document.getElementById('trajetDetails');
+    if (selectedTrajet) {
+        trajetDetails.innerHTML = `
+                <p>Pilote: ${selectedTrajet.pilote}</p>
+                <p>Départ: ${selectedTrajet.depart}</p>
+                <p>Destination: ${selectedTrajet.destination}</p>
+                <p>Places disponibles: ${selectedTrajet.places}</p>
+                <p>Date et heure de départ : ${selectedTrajet.departureDate} ${selectedTrajet.departureTime}</p>
+                <p>Type de carburant: ${selectedTrajet.fuelType}</p>
+                <p>Consommation de carburant : ${selectedTrajet.fuelConsumption} L/100km</p>
+                <p>Distance : ${(selectedTrajet.distance / 1000).toFixed(2)} km</p>
+                <p>Durée : ${selectedTrajet.duree.toFixed(2)} minutes</p>
+                <p>Heure d'arrivée : ${selectedTrajet.arrivalTime}</p>
+            `;
+    } else {
+        trajetDetails.innerHTML = 'Sélectionnez un trajet pour voir les détails';
+    }
+}
+
+function updateTrajetDetails() {
+    const trajetSelect = document.getElementById('trajetSelect');
+    trajetSelect.addEventListener('change', displaySelectedTrajetDetails);
+}
+
+async function registerUserAndReserve() {
+    const trajetIndex = document.getElementById('trajetSelect').value;
+    const username = document.getElementById('usernameCopilot').value;
+    const seats = document.getElementById('seats').value;
+    const adresseReservation = document.getElementById('adresseReservation').value;
+    const adresseArret = document.getElementById('adresseArret').value;
+
+    const selectedTrajet = trajets[trajetIndex];
+
+    try {
+        if (adresseArret) {
+            await selectedTrajet.addPassagerWithStop(username, seats, adresseReservation, adresseArret);
+        } else {
+            selectedTrajet.addPassager(username, seats, adresseReservation);
+        }
+        alert('Réservation effectuée avec succès');
+        goBack();
+    } catch (error) {
+        alert(`Erreur: ${error.message}`);
+    }
+}
+
+function displayTrajetList() {
+    const trajetList = document.getElementById('trajetList');
+    trajetList.innerHTML = '';
+
+    trajets.forEach((trajet, index) => {
+        const listItem = document.createElement('li');
+        listItem.textContent = `${trajet.depart} à ${trajet.destination} - Départ : ${trajet.departureDate} ${trajet.departureTime}`;
+        trajetList.appendChild(listItem);
+    });
+}
+
+function displayInscritsList() {
+    const inscritsList = document.getElementById('inscritsList');
+    inscritsList.innerHTML = '';
+    trajets.forEach((trajet, index) => {
+        const listItem = document.createElement('li');
+        listItem.innerHTML = `<strong>Trajet: ${trajet.depart} à ${trajet.destination}</strong> <br> Pilote: ${trajet.pilote} <br> Passagers: ${trajet.covoitureurs.map(c => `${c.nom} (${c.places} places, ${c.address})`).join(', ')}`;
+        inscritsList.appendChild(listItem);
+    });
+}
+
+updateTrajetDetails();
