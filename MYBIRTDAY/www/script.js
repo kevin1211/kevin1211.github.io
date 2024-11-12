@@ -1,6 +1,3 @@
-// Importation de la classe CelebrationManager du package balloon-confetti-celebration
-import CelebrationManager from 'balloon-confetti-celebration/managers/celebrationManager.js';
-
 // Configuration des options pour l'animation des ballons et des confettis
 const options = {
     containerId: 'balloon-confetti-celebration',  // ID du conteneur pour les ballons
@@ -30,15 +27,15 @@ celebrationManager.setupConfettiCanvas();
 celebrationManager.startCelebration();
 
 // Fonction pour lancer les confettis avec un délai entre chaque groupe d'émissions
-var count = 200;
-var defaults = {
+const count = 200;
+const confettiDefaults = {
     origin: {y: 0.7}
 };
 
 // Fonction pour lancer les confettis
 function fire(particleRatio, opts) {
     confetti({
-        ...defaults,
+        ...confettiDefaults,
         ...opts,
         particleCount: Math.floor(count * particleRatio)
     });
@@ -58,30 +55,29 @@ function startConfettiAnimations() {
 startConfettiAnimations();
 
 // Animation continue des confettis avec une durée de 15 secondes
-var duration = 15 * 1000;
-var animationEnd = Date.now() + duration;
-var defaults = {startVelocity: 30, spread: 360, ticks: 60, zIndex: 0};
+const duration = 15 * 1000;
+const animationEnd = Date.now() + duration;
 
 function randomInRange(min, max) {
     return Math.random() * (max - min) + min;
 }
 
-var interval = setInterval(function () {
-    var timeLeft = animationEnd - Date.now();
+const interval = setInterval(function () {
+    const timeLeft = animationEnd - Date.now();
 
     // Si le temps est écoulé, arrêter l'intervalle
     if (timeLeft <= 0) {
         return clearInterval(interval);
     }
 
-    var particleCount = 50 * (timeLeft / duration);
+    const particleCount = 50 * (timeLeft / duration);
     // Lancer des confettis à gauche et à droite
-    confetti({...defaults, particleCount, origin: {x: randomInRange(0.1, 0.3), y: Math.random() - 0.2}});
-    confetti({...defaults, particleCount, origin: {x: randomInRange(0.7, 0.9), y: Math.random() - 0.2}});
+    confetti({...confettiDefaults, particleCount, origin: {x: randomInRange(0.1, 0.3), y: Math.random() - 0.2}});
+    confetti({...confettiDefaults, particleCount, origin: {x: randomInRange(0.7, 0.9), y: Math.random() - 0.2}});
 }, 250);
 
 // Fonction pour ajouter des confettis en forme d'étoile et de cercle
-var defaults = {
+const starConfettiDefaults = {
     spread: 360,
     ticks: 50,
     gravity: 0,
@@ -93,7 +89,7 @@ var defaults = {
 function shoot() {
     // Confettis en forme d'étoile
     confetti({
-        ...defaults,
+        ...starConfettiDefaults,
         particleCount: 40,
         scalar: 1.2,
         shapes: ['star']
@@ -101,7 +97,7 @@ function shoot() {
 
     // Confettis en forme de cercle
     confetti({
-        ...defaults,
+        ...starConfettiDefaults,
         particleCount: 10,
         scalar: 0.75,
         shapes: ['circle']
@@ -114,7 +110,7 @@ setTimeout(shoot, 100);
 setTimeout(shoot, 200);
 
 // Configuration de l'animation du canvas pour les confettis
-var canvas = document.getElementById('my-canvas');
+const canvas = document.getElementById('my-canvas');
 canvas.confetti = canvas.confetti || confetti.create(canvas, {resize: true});
 
 canvas.confetti({
