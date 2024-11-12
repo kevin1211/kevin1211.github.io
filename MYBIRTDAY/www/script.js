@@ -1,13 +1,13 @@
 // Définir les paramètres par défaut pour les confettis
 const count = 200;
-const defaults = {
+const confettiDefaults = {
     origin: {y: 0.7}
 };
 
 // Fonction pour lancer les confettis
 function fire(particleRatio, opts) {
     confetti({
-        ...defaults,
+        ...confettiDefaults,
         ...opts,
         particleCount: Math.floor(count * particleRatio)
     });
@@ -53,8 +53,8 @@ const interval = setInterval(function () {
     }
 
     const particleCount = 50 * (timeLeft / duration);
-    confetti({...defaults, particleCount, origin: {x: randomInRange(0.1, 0.3), y: Math.random() - 0.2}});
-    confetti({...defaults, particleCount, origin: {x: randomInRange(0.7, 0.9), y: Math.random() - 0.2}});
+    confetti({...confettiDefaults, particleCount, origin: {x: randomInRange(0.1, 0.3), y: Math.random() - 0.2}});
+    confetti({...confettiDefaults, particleCount, origin: {x: randomInRange(0.7, 0.9), y: Math.random() - 0.2}});
 }, 250);
 
 // Paramètres supplémentaires pour les confettis en forme d'étoile et de cercle
@@ -103,3 +103,29 @@ if (canvas) {
 } else {
     console.error("Canvas not found!");
 }
+
+// ** Animation des ballons **
+// Définir les options pour l'animation des ballons
+const options = {
+    containerId: 'balloon-confetti-celebration',  // ID du conteneur pour les ballons
+    balloonCount: 40,  // Nombre de ballons
+    confettiColors: [{front: "#FEDB37", back: "#FDB931"}],  // Couleurs des confettis
+    balloonSpeed: 1.5, // Vitesse des ballons
+    confettiParams: {
+        delay: 1700,  // Délai avant de commencer les confettis
+        number: 120,  // Nombre de confettis par émission
+        size: {x: [10, 30], y: [15, 25]},  // Taille des confettis
+        initSpeed: 35,  // Vitesse initiale des confettis
+        gravity: 0.65,  // Gravité des confettis
+        drag: 0.08,  // Résistance de l'air pour les confettis
+        terminalVelocity: 6,  // Vitesse terminale des confettis
+        flipSpeed: 0.017,  // Vitesse de rotation des confettis
+    }
+};
+
+// Initialisation du gestionnaire de célébration des ballons
+const celebrationManager = new CelebrationManager(options);
+
+// Lancer l'animation des ballons
+celebrationManager.setupConfettiCanvas();
+celebrationManager.startCelebration();
